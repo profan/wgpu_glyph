@@ -3,6 +3,7 @@ mod cache;
 use crate::Region;
 use cache::Cache;
 
+use bytemuck::{bytes_of, cast_slice, Pod, Zeroable};
 use glyph_brush::rusttype::{point, Rect};
 use std::marker::PhantomData;
 use std::mem;
@@ -144,8 +145,7 @@ impl<Depth> Pipeline<Depth> {
         }
 
         let instance_buffer = device
-            .create_buffer_mapped(instances.len(), wgpu::BufferUsage::COPY_SRC)
-            .fill_from_slice(instances);
+            .create_buffer_with_data(cast_slice(instances), wgpu::BufferUsage::COPY_SRC);
 
         encoder.copy_buffer_to_buffer(
             &instance_buffer,
@@ -177,11 +177,10 @@ fn build<D>(
     cache_height: u32,
 ) -> Pipeline<D> {
     let transform = device
-        .create_buffer_mapped(
-            16,
-            wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
-        )
-        .fill_from_slice(&IDENTITY_MATRIX);
+        .create_buffer_with_data(
+            bytes_of(&IDENTITY_MATRIX),
+            wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST
+        );
 
     let sampler = device.create_sampler(&wgpu::SamplerDescriptor {
         address_mode_u: wgpu::AddressMode::ClampToEdge,
@@ -348,8 +347,7 @@ fn draw<D>(
 ) {
     if transform != pipeline.current_transform {
         let transform_buffer = device
-            .create_buffer_mapped(16, wgpu::BufferUsage::COPY_SRC)
-            .fill_from_slice(&transform[..]);
+            .create_buffer_with_data(bytes_of(&transform), wgpu::BufferUsage::COPY_SRC);
 
         encoder.copy_buffer_to_buffer(
             &transform_buffer,
@@ -424,6 +422,7 @@ fn create_uniforms(
     })
 }
 
+#[repr(C)]
 #[derive(Debug, Clone, Copy)]
 pub struct Instance {
     left_top: [f32; 3],
@@ -432,6 +431,9 @@ pub struct Instance {
     tex_right_bottom: [f32; 2],
     color: [f32; 4],
 }
+
+unsafe impl Pod for Instance {}
+unsafe impl Zeroable for Instance {}
 
 impl Instance {
     const INITIAL_AMOUNT: usize = 50_000;
