@@ -47,9 +47,9 @@ impl Cache {
                 array_layer: 0,
                 mip_level: 0,
                 origin: wgpu::Origin3d {
-                    x: offset[0] as f32,
-                    y: offset[1] as f32,
-                    z: 0.0,
+                    x: offset[0] as u32,
+                    y: offset[1] as u32,
+                    z: 0,
                 },
             },
             wgpu::Extent3d {
