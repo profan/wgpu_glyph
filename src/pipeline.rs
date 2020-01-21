@@ -76,9 +76,7 @@ impl Pipeline<wgpu::DepthStencilStateDescriptor> {
         device: &wgpu::Device,
         encoder: &mut wgpu::CommandEncoder,
         target: &wgpu::TextureView,
-        depth_stencil_attachment: wgpu::RenderPassDepthStencilAttachmentDescriptor<
-            &wgpu::TextureView,
-        >,
+        depth_stencil_attachment: wgpu::RenderPassDepthStencilAttachmentDescriptor,
         transform: [f32; 16],
         region: Option<Region>,
     ) {
@@ -340,7 +338,7 @@ fn draw<D>(
     encoder: &mut wgpu::CommandEncoder,
     target: &wgpu::TextureView,
     depth_stencil_attachment: Option<
-        wgpu::RenderPassDepthStencilAttachmentDescriptor<&wgpu::TextureView>,
+        wgpu::RenderPassDepthStencilAttachmentDescriptor,
     >,
     transform: [f32; 16],
     region: Option<Region>,
